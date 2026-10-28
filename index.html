@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DivyTheOg | Official Portal</title>
+  
+  <!-- Pixel Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --panel-bg: rgba(18, 22, 36, 0.85);
+      --border-color: #2b3245;
+      --accent-green: #55ff55;
+      --accent-purple: #bd93f9;
+      --accent-pink: #ff79c6;
+      --accent-cyan: #8be9fd;
+      --text-main: #f8f8f2;
+      --text-muted: #6272a4;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'VT323', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Interactive Pixel Canvas */
+    #particle-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .container {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 680px;
+      padding: 2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    /* Header Profile Card */
+    .profile-card {
+      background: var(--panel-bg);
+      border: 4px solid var(--border-color);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      padding: 2rem;
+      width: 100%;
+      text-align: center;
+      backdrop-filter: blur(8px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .profile-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #ff5555, #ffb86c, #f1fa8c, #55ff55, #8be9fd, #bd93f9, #ff79c6);
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      width: 128px;
+      height: 128px;
+      margin: 0 auto 1.2rem auto;
+      border: 4px solid #383f58;
+      border-radius: 8px;
+      box-shadow: 0 0 25px rgba(255, 121, 198, 0.3);
+      overflow: hidden;
+      background: linear-gradient(135deg, #ff79c6, #bd93f9);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+    }
+
+    .avatar-wrapper:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 35px rgba(255, 121, 198, 0.6);
+    }
+
+    .avatar-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      image-rendering: pixelated;
+    }
+
+    .title {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 1.6rem;
+      color: #fff;
+      text-shadow: 3px 3px 0px #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+      letter-spacing: 1px;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      font-size: 1.3rem;
+      color: var(--accent-green);
+      letter-spacing: 1px;
+      margin-bottom: 1rem;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    .bio-text {
+      font-size: 1.25rem;
+      color: #d8dee9;
+      line-height: 1.3;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 0.8rem;
+      border-radius: 4px;
+      border: 1px dashed var(--border-color);
+    }
+
+    /* Social Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      width: 100%;
+    }
+
+    .pixel-btn {
+      background: #191e2e;
+      border: 3px solid #323b54;
+      border-radius: 6px;
+      padding: 1rem 0.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      color: var(--text-main);
+      text-decoration: none;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.15s ease;
+      box-shadow: 0 5px 0 #0f121c;
+    }
+
+    .pixel-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 0 #0f121c;
+      border-color: var(--accent-cyan);
+      background: #21283d;
+    }
+
+    .pixel-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 3px 0 #0f121c;
+    }
+
+    .btn-icon {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-label {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.65rem;
+      letter-spacing: 0.5px;
+    }
+
+    /* Button Hover Themes */
+    .btn-yt:hover { border-color: #ff5555; }
+    .btn-x:hover { border-color: #f1fa8c; }
+    .btn-mail:hover { border-color: #ff79c6; }
+    .btn-dc:hover { border-color: #bd93f9; }
+    .btn-insta:hover { border-color: #ffb86c; }
+
+    /* Custom Minecraft-Style Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .pixel-modal {
+      background: #1e2333;
+      border: 4px solid #485475;
+      box-shadow: 0 0 30px #000, inset 0 0 15px rgba(0,0,0,0.5);
+      padding: 1.5rem;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      border-radius: 6px;
+      transform: scale(0.8);
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .modal-overlay.active .pixel-modal {
+      transform: scale(1);
+    }
+
+    .modal-title {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.85rem;
+      color: #ff5555;
+      margin-bottom: 1rem;
+    }
+
+    .modal-body {
+      font-size: 1.3rem;
+      color: #f8f8f2;
+      margin-bottom: 1.5rem;
+      line-height: 1.3;
+    }
+
+    .modal-btn {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.7rem;
+      padding: 0.8rem 1.2rem;
+      background: #ff5555;
+      color: #fff;
+      border: 2px solid #000;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #990000;
+      border-radius: 4px;
+    }
+
+    .modal-btn:hover {
+      background: #ff6e6e;
+    }
+
+    .modal-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #990000;
+    }
+
+    /* Minimalist Pixel Footer */
+    footer {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      padding: 1.5rem;
+      text-align: center;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.85rem;
+      color: var(--accent-pink);
+      text-shadow: 2px 2px 0px #000;
+      letter-spacing: 1px;
+    }
+
+    @media (max-width: 480px) {
+      .title { font-size: 1.2rem; }
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .bio-text { font-size: 1.1rem; }
+      footer { font-size: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="particle-canvas"></canvas>
+
+  <div class="container">
+    
+    <!-- Profile Card -->
+    <div class="profile-card">
+      <div class="avatar-wrapper" onclick="playPixelSound('pop')">
+        <img src="avatar.png" alt="DivyTheOg PFP" onerror="this.src='https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/minecraft/minecraft.png';">
+      </div>
+      <h1 class="title">DivyTheOg</h1>
+      <div class="subtitle">⚡ MINECRAFT & TECH CREATOR ⚡</div>
+      <p class="bio-text">Welcome to my official hub! Building redstone, creating shorts, and crafting digital projects.</p>
+    </div>
+
+    <!-- Social Links Grid -->
+    <div class="grid">
+      
+      <!-- YouTube -->
+      <a href="https://www.youtube.com/@DivyTheOg" target="_blank" class="pixel-btn btn-yt" onclick="playPixelSound('click')">
+        <div class="btn-icon">
+          <svg width="36" height="36" viewBox="0 0 16 16" fill="none">
+            <path d="M1 3H15V13H1V3Z" fill="#FF0000"/>
+            <path d="M0 4H16V12H0V4Z" fill="#CC0000"/>
+            <path d="M2 2H14V14H2V2Z" fill="#FF0000"/>
+            <path d="M6 5V11L11 8L6 5Z" fill="#FFFFFF"/>
+          </svg>
+        </div>
+        <span class="btn-label">YOUTUBE</span>
+      </a>
+
+      <!-- Twitter / X -->
+      <a href="https://x.com/divypatel211020" target="_blank" class="pixel-btn btn-x" onclick="playPixelSound('click')">
+        <div class="btn-icon">
+          <svg width="36" height="36" viewBox="0 0 16 16" fill="none">
+            <rect width="16" height="16" fill="#000000"/>
+            <path d="M2 2H5L9 8L5 14H2L6.5 8.25L2 2Z" fill="#FFFFFF"/>
+            <path d="M14 2H11L7 8L11 14H14L9.5 8.25L14 2Z" fill="#FFFFFF"/>
+          </svg>
+        </div>
+        <span class="btn-label">TWITTER / X</span>
+      </a>
+
+      <!-- Email -->
+      <a href="mailto:divypatel211020@gmail.com" class="pixel-btn btn-mail" onclick="playPixelSound('click')">
+        <div class="btn-icon">
+          <svg width="36" height="36" viewBox="0 0 16 16" fill="none">
+            <rect width="16" height="16" fill="#FF79C6"/>
+            <path d="M1 2H15V14H1V2Z" fill="#F8F8F2"/>
+            <path d="M2 3L8 8L14 3V4L8 9L2 4V3Z" fill="#282A36"/>
+          </svg>
+        </div>
+        <span class="btn-label">EMAIL</span>
+      </a>
+
+      <!-- Discord -->
+      <div class="pixel-btn btn-dc" onclick="openModal('Discord Server Is in Maintenance 🛠️')">
+        <div class="btn-icon">
+          <svg width="36" height="36" viewBox="0 0 16 16" fill="none">
+            <rect width="16" height="16" fill="#5865F2"/>
+            <path d="M3 4C5 3 8 3 8 3C8 3 11 3 13 4C14 6 14 10 14 10C12 11 10 12 10 12L9.5 10.5C11 10 11.5 9 11.5 9C10 10 8 10 8 10C8 10 6 10 4.5 9C4.5 9 5 10 6.5 10.5L6 12C6 12 4 11 2 10C2 10 2 6 3 4Z" fill="#FFFFFF"/>
+            <rect x="5" y="6" width="2" height="2" fill="#5865F2"/>
+            <rect x="9" y="6" width="2" height="2" fill="#5865F2"/>
+          </svg>
+        </div>
+        <span class="btn-label">DISCORD</span>
+      </div>
+
+      <!-- Instagram -->
+      <div class="pixel-btn btn-insta" onclick="openModal('Meta Suspends His account every time so no Insta 🚫')">
+        <div class="btn-icon">
+          <svg width="36" height="36" viewBox="0 0 16 16" fill="none">
+            <rect width="16" height="16" fill="#E1306C"/>
+            <rect x="2" y="2" width="12" height="12" rx="3" fill="#E1306C" stroke="#FFFFFF" stroke-width="2"/>
+            <circle cx="8" cy="8" r="3" stroke="#FFFFFF" stroke-width="2"/>
+            <circle cx="12" cy="4" r="1" fill="#FFFFFF"/>
+          </svg>
+        </div>
+        <span class="btn-label">INSTAGRAM</span>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Modal Alert -->
+  <div class="modal-overlay" id="custom-modal">
+    <div class="pixel-modal">
+      <div class="modal-title">SYSTEM NOTICE</div>
+      <div class="modal-body" id="modal-text">Status message here</div>
+      <button class="modal-btn" onclick="closeModal()">CLOSE [X]</button>
+    </div>
+  </div>
+
+  <!-- Clean Footer -->
+  <footer>
+    @DivyTheOg
+  </footer>
+
+  <script>
+    // Web Audio Synthesizer
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playPixelSound(type) {
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'click') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.08);
+      } else if (type === 'modal') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(120, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.25);
+      } else if (type === 'pop') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+      }
+    }
+
+    function openModal(msg) {
+      playPixelSound('modal');
+      document.getElementById('modal-text').innerText = msg;
+      document.getElementById('custom-modal').classList.add('active');
+    }
+
+    function closeModal() {
+      playPixelSound('click');
+      document.getElementById('custom-modal').classList.remove('active');
+    }
+
+    // Interactive Canvas
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let particles = [];
+    const colors = ['#55ff55', '#bd93f9', '#ff79c6', '#8be9fd', '#383f58'];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class PixelParticle {
+      constructor() {
+        this.reset();
+      }
+
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.floor(Math.random() * 4) + 2;
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+        this.vy = -(Math.random() * 0.8 + 0.2);
+        this.alpha = Math.random() * 0.5 + 0.2;
+      }
+
+      update() {
+        this.y += this.vy;
+        if (this.y < -10) {
+          this.reset();
+          this.y = canvas.height + 10;
+        }
+      }
+
+      draw() {
+        ctx.fillStyle = this.color;
+        ctx.globalAlpha = this.alpha;
+        ctx.fillRect(Math.floor(this.x), Math.floor(this.y), this.size, this.size);
+        ctx.globalAlpha = 1.0;
+      }
+    }
+
+    for (let i = 0; i < 45; i++) {
+      particles.push(new PixelParticle());
+    }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animateParticles);
+    }
+
+    animateParticles();
+  </script>
+</body>
+</html>
